@@ -80,6 +80,23 @@ deactivate
 6. **Interpretación:** coeficientes del modelo y análisis de variables de mayor impacto.
 7. **Simulación What-if:** escenario de aumento de inversión en marketing.
 
+## Configuración del entorno de desarrollo con Git
+
+### Notebooks y control de versiones (nbstripout)
+
+Este repositorio usa [`nbstripout`](https://github.com/kynan/nbstripout) para evitar que los metadatos volátiles de los notebooks (outputs de celdas, contadores de ejecución, kernelspec, etc.) generen cambios falsos en git.
+
+**Cada colaborador debe ejecutar este comando una sola vez después de clonar el repositorio:**
+
+```bash
+pip install nbstripout
+nbstripout --install
+```
+
+Sin este paso, `git status` mostrará los notebooks como modificados aunque no hayas cambiado el código, y los `git pull` fallarán con conflictos.
+
+> El archivo `.gitattributes` ya está configurado en el repositorio. Solo necesitas instalar el filtro localmente.
+
 ## Tecnologías utilizadas
 
 - Python 3.10+
@@ -87,3 +104,4 @@ deactivate
 - numpy
 - scikit-learn
 - Jupyter Notebook
+- nbstripout

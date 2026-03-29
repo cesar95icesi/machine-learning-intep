@@ -1,0 +1,16 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored by default — never commit real credentials.
+
+# Required
+# (none for Fargate — credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars)
+
+# Optional overrides
+# aws_region       = "us-east-1"
+# project_name     = "emotion-detector"
+# image_tag        = "latest"
+
+# ECS Fargate sizing
+# ecs_task_cpu     = "1024"    # 256, 512, 1024, 2048, 4096
+# ecs_task_memory  = "2048"    # 512, 1024, 2048, 4096, 8192, etc
+# ecs_desired_count = 2        # number of running tasks
+# ecs_max_count    = 4         # max for auto-scaling

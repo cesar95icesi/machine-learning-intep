@@ -1,0 +1,103 @@
+data.aws_ami.al2023: Reading...
+aws_ecr_repository.app: Refreshing state... [id=emotion-detector]
+aws_vpc.main: Refreshing state... [id=vpc-0cfc700f62050de2a]
+aws_iam_role.ec2: Refreshing state... [id=emotion-detector-ec2-role]
+aws_iam_role_policy_attachment.ecr_read: Refreshing state... [id=emotion-detector-ec2-role-20260329185624961600000001]
+aws_iam_instance_profile.ec2: Refreshing state... [id=emotion-detector-ec2-profile]
+aws_ecr_lifecycle_policy.app: Refreshing state... [id=emotion-detector]
+data.aws_ami.al2023: Read complete after 1s [id=ami-08b09ec6240624138]
+aws_internet_gateway.main: Refreshing state... [id=igw-0cd6471ce27790ae7]
+aws_subnet.public: Refreshing state... [id=subnet-050c1e32d2e071fe4]
+aws_security_group.ec2: Refreshing state... [id=sg-087551163b2814c02]
+aws_route_table.public: Refreshing state... [id=rtb-089383c309c27384a]
+aws_route_table_association.public: Refreshing state... [id=rtbassoc-09fb37dc3f8cb75f9]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_instance.app will be created
+  + resource "aws_instance" "app" {
+      + ami                                  = "ami-08b09ec6240624138"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = "emotion-detector-ec2-profile"
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t3.large"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = "emotion-detector-key-20260329"
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = "subnet-050c1e32d2e071fe4"
+      + tags                                 = {
+          + "Name"    = "emotion-detector-ec2"
+          + "Project" = "emotion-detector"
+        }
+      + tags_all                             = {
+          + "Name"    = "emotion-detector-ec2"
+          + "Project" = "emotion-detector"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = "feca7520606fb815214dc163312547a58514c773"
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = [
+          + "sg-087551163b2814c02",
+        ]
+
+      + root_block_device {
+          + delete_on_termination = true
+          + device_name           = (known after apply)
+          + encrypted             = true
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 30
+          + volume_type           = "gp3"
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + app_url             = (known after apply)
+  + instance_public_dns = (known after apply)
+  + instance_public_ip  = (known after apply)
+aws_instance.app: Creating...
+
+Error: creating EC2 Instance: operation error EC2: RunInstances, https response error StatusCode: 403, RequestID: 52acbc10-bbad-4fee-88d8-beba4af5f930, api error UnauthorizedOperation: You are not authorized to perform this operation. User: arn:aws:iam::767397965014:user/cloud_user is not authorized to perform: ec2:RunInstances on resource: arn:aws:ec2:us-east-1:767397965014:instance/* with an explicit deny in a service control policy: arn:aws:organizations::674998908974:policy/o-yu55c2titn/service_control_policy/p-81ao4b3h. Encoded authorization failure message: ZhR1hTxKCBYLv6T7vagrp4G-1-ccb44TWVqg8vHBKrGEEcuv2glwESionh5Fd3-SX2XWvOcXQGMp3BTI1D9-SP1gw3OsnaJxsQ273NiluLwdi25W1qFpJlCjXh8gpRg-9GmQiViQNKSFGqTWdwXxbidceprftjzWXcRk9XYLJZVXvPgk_58CwZXYPgefYL-XzBEfmAiwrprlIjHkpiZELzTYZNckusiAP3ievdDhpHmJ3mytjrT47_9xCyhiP_AaZYNjV8bPrLi1CVwcQZuQAAiCvUo6uQOoAPvK7txAFcjOv3gZOELdJFlwFBaVhC2L_MHkM_b-YGS1qgtP1N8XsYTU9iFHHTXiMkaOEbm2cGqCIUtfJy0Kp4SctQLvSUv1kO6LXAL2o7tCY5Swo-oUf9yTorWecA8GEFousUkpFkViWI7SBjB4msIDOqqwixZ8PGonzxYf14BsQpOwiIiyJIDu-PDLTEiIOvI_mRWnMZb-WNn7qsTC2eBoq6aYBST_oj5fGJUOYCtTjqsDVN1YpC0wqdHhQ3_XJsUdV9PZW1NYNKuVLZ9z-z-qmG3D_elBDhRdnEc1qCD7Wth49d9TIJlmfcUji1F4F8hAphwUmAqy-AajFBDMeKWm6XqieqTp-PZxfvFOPG_nzi7SpCA9d25UbUV1vakzXULDOY5oclrpFRxbS-6o1gm5_mHQ6Lc6vqZ6B9AUeygOZcLmpPRXHPIJQpbU_HXqLdxLX0GHWx3uDaWVUiUAbyMqLVNhg78Yl4S5fLqX5z32EEYaqmFpbca9ejWNqDK06ICTXJQ34e2Ss9JVuOQG_zpkPo9Bj4cjqRb6vJbZsr69T9GHhebYCDWl8lFz2wDIk7uhakNAndNAKYLECOJoTu_R8yaFMk4Ma5HCFsDCx2ZuYNfsTJOzbuAYOWABH9Ph4uln6kb20rJWkCdNIBeiPDhE4wcNGp0BUqE9e0cxuHWBRvIh-NK6fcp9CnlxC9xQODyEWsRjpJXNm7F1DC5vngv0kYcXJgsxD8RE8TfrHUX4oYkIKlF9KXeutQqVzGLymoWobdMXgGRLNP02Xan0pLTl_dj5GF5tc39aBGTQ
+
+  with aws_instance.app,
+  on main.tf line 170, in resource "aws_instance" "app":
+ 170: resource "aws_instance" "app" {
+

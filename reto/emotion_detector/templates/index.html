@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EmotiVision — Detector de Emociones</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --happy-primary: #f4d03f;
+    --happy-glow: rgba(244, 208, 63, 0.3);
+    --sad-primary: #5dade2;
+    --sad-glow: rgba(93, 173, 226, 0.3);
+    --neutral-primary: #a9a9c8;
+    --neutral-glow: rgba(169, 169, 200, 0.2);
+    --text: #e8e8f0;
+    --muted: #5a5a7a;
+    --accent: var(--neutral-primary);
+    --glow: var(--neutral-glow);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    background: linear-gradient(135deg, #e8e8f0 0%, var(--muted) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* Main layout */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 800px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Camera panel */
+  .camera-panel {
+    position: relative;
+  }
+
+  .camera-wrapper {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.6s ease, box-shadow 0.6s ease;
+  }
+
+  .camera-wrapper.happy {
+    border-color: var(--happy-primary);
+    box-shadow: 0 0 60px var(--happy-glow), inset 0 0 40px rgba(244,208,63,0.04);
+  }
+
+  .camera-wrapper.sad {
+    border-color: var(--sad-primary);
+    box-shadow: 0 0 60px var(--sad-glow), inset 0 0 40px rgba(93,173,226,0.04);
+  }
+
+  .camera-wrapper.neutral {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+
+  #videoElement {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* mirror effect */
+  }
+
+  /* Overlay canvas for face detection */
+  #overlayCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transform: scaleX(-1);
+  }
+
+  /* Corner decorations */
+  .corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    z-index: 2;
+    transition: border-color 0.6s ease;
+  }
+  .corner.tl { top: 12px; left: 12px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner.tr { top: 12px; right: 12px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+  .corner.bl { bottom: 12px; left: 12px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner.br { bottom: 12px; right: 12px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3a3a5a;
+    transition: background 0.3s ease;
+  }
+
+  .status-dot.active {
+    background: #4ade80;
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .fps-counter { margin-left: auto; }
+
+  /* Right panel */
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Emotion display */
+  .emotion-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+    transition: border-color 0.6s ease, box-shadow 0.6s ease;
+  }
+
+  .emotion-card.happy {
+    border-color: rgba(244,208,63,0.3);
+    box-shadow: 0 0 40px rgba(244,208,63,0.08);
+  }
+
+  .emotion-card.sad {
+    border-color: rgba(93,173,226,0.3);
+    box-shadow: 0 0 40px rgba(93,173,226,0.08);
+  }
+
+  .emotion-emoji {
+    font-size: 5rem;
+    line-height: 1;
+    margin-bottom: 16px;
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 0 20px var(--glow));
+  }
+
+  .emotion-emoji.bounce {
+    animation: emoji-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes emoji-bounce {
+    0% { transform: scale(0.6); }
+    100% { transform: scale(1); }
+  }
+
+  .emotion-label {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    transition: color 0.4s ease;
+  }
+
+  .emotion-label.happy { color: var(--happy-primary); }
+  .emotion-label.sad { color: var(--sad-primary); }
+  .emotion-label.neutral { color: var(--neutral-primary); }
+
+  .emotion-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Confidence bar */
+  .confidence-wrap {
+    margin-top: 20px;
+    text-align: left;
+  }
+
+  .conf-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .conf-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .conf-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.5s ease, background 0.5s ease;
+    width: 0%;
+  }
+
+  /* Emotion breakdown */
+  .breakdown-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .breakdown-title {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .emotion-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.72rem;
+  }
+
+  .emotion-row:last-child { margin-bottom: 0; }
+
+  .row-label {
+    width: 70px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .row-track {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .row-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .row-value {
+    width: 36px;
+    text-align: right;
+    color: var(--muted);
+    font-size: 0.65rem;
+  }
+
+  /* Emotion colors */
+  .fill-happy { background: var(--happy-primary); }
+  .fill-sad { background: var(--sad-primary); }
+  .fill-angry { background: #e74c3c; }
+  .fill-fear { background: #9b59b6; }
+  .fill-disgust { background: #27ae60; }
+  .fill-surprise { background: #e67e22; }
+  .fill-neutral { background: var(--neutral-primary); }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover {
+    border-color: var(--muted);
+    background: #1a1a28;
+  }
+
+  .btn.primary {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn.primary:hover {
+    background: rgba(169,169,200,0.1);
+  }
+
+  /* No face detected state */
+  .no-face {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,10,15,0.85);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 3;
+  }
+
+  .no-face.visible { opacity: 1; }
+
+  /* History dots */
+  .history-track {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .h-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  .h-dot.happy { background: var(--happy-primary); }
+  .h-dot.sad { background: var(--sad-primary); }
+  .h-dot.neutral { background: var(--muted); }
+
+  /* Intro overlay */
+  .intro {
+    position: absolute;
+    inset: 0;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 10;
+    border-radius: 16px;
+    transition: opacity 0.5s ease;
+  }
+
+  .intro.hidden { opacity: 0; pointer-events: none; }
+
+  .intro-icon {
+    font-size: 3rem;
+  }
+
+  .intro-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    color: var(--text);
+  }
+
+  .intro-sub {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-align: center;
+    max-width: 240px;
+    line-height: 1.7;
+  }
+
+  .btn-start {
+    margin-top: 8px;
+    padding: 12px 32px;
+    background: transparent;
+    border: 1px solid var(--text);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-start:hover {
+    background: rgba(255,255,255,0.05);
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">EmotiVision</div>
+    <div class="tagline">Detector de emociones en tiempo real · DeepFace + Flask</div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Camera side -->
+    <div class="camera-panel">
+      <div class="camera-wrapper neutral" id="cameraWrapper">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+
+        <!-- Intro overlay -->
+        <div class="intro" id="introOverlay">
+          <div class="intro-icon">📷</div>
+          <div class="intro-text">Activar Cámara</div>
+          <div class="intro-sub">Permite el acceso a tu cámara para detectar emociones en tiempo real</div>
+          <button class="btn-start" onclick="startCamera()">Iniciar detección</button>
+        </div>
+
+        <video id="videoElement" autoplay muted playsinline></video>
+        <canvas id="overlayCanvas"></canvas>
+        <div class="no-face" id="noFaceMsg">No se detectó rostro</div>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Cámara inactiva</span>
+        <span id="faceCount">— rostros</span>
+        <span class="fps-counter" id="fpsCounter">—</span>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel">
+
+      <!-- Main emotion card -->
+      <div class="emotion-card neutral" id="emotionCard">
+        <span class="emotion-emoji" id="emotionEmoji">😐</span>
+        <div class="emotion-label neutral" id="emotionLabel">Neutral</div>
+        <div class="emotion-sub" id="emotionSub">Esperando análisis...</div>
+
+        <div class="confidence-wrap">
+          <div class="conf-label">
+            <span>Confianza</span>
+            <span id="confValue">0%</span>
+          </div>
+          <div class="conf-track">
+            <div class="conf-fill" id="confFill"></div>
+          </div>
+        </div>
+
+        <div class="history-track" id="historyTrack"></div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown-card">
+        <div class="breakdown-title">Análisis detallado</div>
+
+        <div class="emotion-row">
+          <span class="row-label">Feliz</span>
+          <div class="row-track"><div class="row-fill fill-happy" id="bar-happy" style="width:0%"></div></div>
+          <span class="row-value" id="val-happy">0%</span>
+        </div>
+        <div class="emotion-row">
+          <span class="row-label">Triste</span>
+          <div class="row-track"><div class="row-fill fill-sad" id="bar-sad" style="width:0%"></div></div>
+          <span class="row-value" id="val-sad">0%</span>
+        </div>
+        <div class="emotion-row">
+          <span class="row-label">Enojo</span>
+          <div class="row-track"><div class="row-fill fill-angry" id="bar-angry" style="width:0%"></div></div>
+          <span class="row-value" id="val-angry">0%</span>
+        </div>
+        <div class="emotion-row">
+          <span class="row-label">Miedo</span>
+          <div class="row-track"><div class="row-fill fill-fear" id="bar-fear" style="width:0%"></div></div>
+          <span class="row-value" id="val-fear">0%</span>
+        </div>
+        <div class="emotion-row">
+          <span class="row-label">Sorpresa</span>
+          <div class="row-track"><div class="row-fill fill-surprise" id="bar-surprise" style="width:0%"></div></div>
+          <span class="row-value" id="val-surprise">0%</span>
+        </div>
+        <div class="emotion-row">
+          <span class="row-label">Neutral</span>
+          <div class="row-track"><div class="row-fill fill-neutral" id="bar-neutral" style="width:0%"></div></div>
+          <span class="row-value" id="val-neutral">0%</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn primary" onclick="startCamera()" id="btnStart">▶ Iniciar</button>
+        <button class="btn" onclick="stopCamera()" id="btnStop">■ Detener</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let videoStream = null;
+  let analysisInterval = null;
+  let fpsInterval = null;
+  let frameCount = 0;
+  let isRunning = false;
+  let lastEmotion = null;
+  let emotionHistory = [];
+  const MAX_HISTORY = 30;
+
+  const EMOTIONS = {
+    happy: { emoji: "😄", label: "Feliz", className: "happy", sub: "¡Qué bonita sonrisa!" },
+    sad: { emoji: "😢", label: "Triste", className: "sad", sub: "Pareces un poco triste..." },
+    neutral: { emoji: "😐", label: "Neutral", className: "neutral", sub: "Sin emoción clara detectada" }
+  };
+
+  function syncOverlaySize() {
+    const video = document.getElementById('videoElement');
+    const canvas = document.getElementById('overlayCanvas');
+    const width = video.videoWidth || 640;
+    const height = video.videoHeight || 480;
+
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+  }
+
+  function getCameraErrorMessage(err) {
+    if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      return 'La cámara requiere HTTPS o abrir la app desde localhost.';
+    }
+
+    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+      return 'Permiso de cámara denegado. Habilítalo en el navegador.';
+    }
+
+    if (err && (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError')) {
+      return 'No se encontró una cámara disponible en este equipo.';
+    }
+
+    if (err && (err.name === 'NotReadableError' || err.name === 'TrackStartError')) {
+      return 'La cámara está siendo usada por otra aplicación.';
+    }
+
+    return (err && err.message) || 'Tu navegador no soporta acceso a la cámara.';
+  }
+
+  async function requestUserMedia(constraints) {
+    if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+      return navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    const legacyGetUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+    if (typeof legacyGetUserMedia === 'function') {
+      return new Promise((resolve, reject) => legacyGetUserMedia.call(navigator, constraints, resolve, reject));
+    }
+
+    throw new Error(getCameraErrorMessage());
+  }
+
+  async function startCamera() {
+    try {
+      videoStream = await requestUserMedia({ 
+        video: { width: 640, height: 480, facingMode: 'user' }, 
+        audio: false 
+      });
+
+      const video = document.getElementById('videoElement');
+      video.srcObject = videoStream;
+      await video.play();
+      syncOverlaySize();
+
+      document.getElementById('introOverlay').classList.add('hidden');
+      document.getElementById('statusDot').classList.add('active');
+      document.getElementById('statusText').textContent = 'Cámara activa · Analizando...';
+      document.getElementById('faceCount').textContent = '0 rostros';
+      isRunning = true;
+
+      // Keep overlay size in sync with camera stream dimensions.
+      video.addEventListener('loadedmetadata', syncOverlaySize);
+      video.addEventListener('resize', syncOverlaySize);
+
+      // Start analysis loop (every 800ms)
+      analysisInterval = setInterval(captureAndAnalyze, 800);
+
+      // FPS counter
+      fpsInterval = setInterval(() => {
+        document.getElementById('fpsCounter').textContent = `${frameCount} análisis/min`;
+        frameCount = 0;
+      }, 60000);
+
+    } catch (err) {
+      document.getElementById('statusText').textContent = 'Error: ' + getCameraErrorMessage(err);
+      document.getElementById('faceCount').textContent = '— rostros';
+      console.error('Camera error:', err);
+    }
+  }
+
+  function stopCamera() {
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+    clearInterval(analysisInterval);
+    clearInterval(fpsInterval);
+    isRunning = false;
+
+    document.getElementById('videoElement').srcObject = null;
+    document.getElementById('statusDot').classList.remove('active');
+    document.getElementById('statusText').textContent = 'Cámara inactiva';
+    document.getElementById('faceCount').textContent = '— rostros';
+    document.getElementById('fpsCounter').textContent = '—';
+    document.getElementById('introOverlay').classList.remove('hidden');
+    resetUI();
+  }
+
+  async function captureAndAnalyze() {
+    if (!isRunning) return;
+
+    const video = document.getElementById('videoElement');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    const imageData = canvas.toDataURL('image/jpeg', 0.7);
+
+    try {
+      const response = await fetch('/analyze_frame', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      });
+
+      const data = await response.json();
+      frameCount++;
+      updateUI(data);
+    } catch (err) {
+      console.error('Analysis error:', err);
+    }
+  }
+
+  function drawFaceBox(ctx, faceBox, strokeColor, isPrimary) {
+    const x = Number(faceBox.x) || 0;
+    const y = Number(faceBox.y) || 0;
+    const w = Number(faceBox.w) || 0;
+    const h = Number(faceBox.h) || 0;
+    if (w <= 0 || h <= 0) return;
+
+    const corner = Math.max(18, Math.min(w, h) * 0.22);
+
+    ctx.lineWidth = isPrimary ? 3 : 2;
+    ctx.strokeStyle = strokeColor;
+    ctx.shadowBlur = isPrimary ? 12 : 8;
+    ctx.shadowColor = strokeColor;
+    ctx.beginPath();
+
+    // Top-left
+    ctx.moveTo(x, y + corner);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + corner, y);
+
+    // Top-right
+    ctx.moveTo(x + w - corner, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w, y + corner);
+
+    // Bottom-right
+    ctx.moveTo(x + w, y + h - corner);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x + w - corner, y + h);
+
+    // Bottom-left
+    ctx.moveTo(x + corner, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x, y + h - corner);
+
+    ctx.stroke();
+
+    // Subtle inner guide for better visibility in bright backgrounds.
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = isPrimary ? 0.35 : 0.22;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, w, h);
+    ctx.globalAlpha = 1;
+  }
+
+  function drawFaceBoxes(faceBoxes, faceDetected, emotion) {
+    const canvas = document.getElementById('overlayCanvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (!faceDetected || !Array.isArray(faceBoxes) || faceBoxes.length === 0) return;
+
+    let strokeColor = '#a9a9c8';
+    if (emotion === 'happy') strokeColor = '#f4d03f';
+    if (emotion === 'sad') strokeColor = '#5dade2';
+
+    faceBoxes.forEach((box, index) => {
+      drawFaceBox(ctx, box, strokeColor, index === 0);
+    });
+  }
+
+  function updateUI(data) {
+    const { emotion, confidence, all_emotions, face_detected, face_box, face_boxes, face_count } = data;
+    const faceCountValue = Number.isFinite(Number(face_count)) ? Number(face_count) : (Array.isArray(face_boxes) ? face_boxes.length : 0);
+    document.getElementById('faceCount').textContent = `${faceCountValue} ${faceCountValue === 1 ? 'rostro' : 'rostros'}`;
+
+    // No face indicator
+    const noFaceEl = document.getElementById('noFaceMsg');
+    if (face_detected === false) {
+      noFaceEl.classList.add('visible');
+    } else {
+      noFaceEl.classList.remove('visible');
+    }
+
+    const boxes = Array.isArray(face_boxes) && face_boxes.length > 0
+      ? face_boxes
+      : (face_box ? [face_box] : []);
+    drawFaceBoxes(boxes, face_detected !== false, emotion);
+
+    if (!emotion) return;
+
+    const info = EMOTIONS[emotion] || EMOTIONS.neutral;
+    const wrapper = document.getElementById('cameraWrapper');
+    const card = document.getElementById('emotionCard');
+    const emojiEl = document.getElementById('emotionEmoji');
+    const labelEl = document.getElementById('emotionLabel');
+    const subEl = document.getElementById('emotionSub');
+
+    // Update classes
+    wrapper.className = `camera-wrapper ${info.className}`;
+    card.className = `emotion-card ${info.className}`;
+
+    // Bounce animation on change
+    if (emotion !== lastEmotion) {
+      emojiEl.classList.remove('bounce');
+      void emojiEl.offsetWidth; // reflow
+      emojiEl.classList.add('bounce');
+      lastEmotion = emotion;
+
+      // Update CSS variables
+      const root = document.documentElement;
+      if (emotion === 'happy') {
+        root.style.setProperty('--accent', 'var(--happy-primary)');
+        root.style.setProperty('--glow', 'var(--happy-glow)');
+      } else if (emotion === 'sad') {
+        root.style.setProperty('--accent', 'var(--sad-primary)');
+        root.style.setProperty('--glow', 'var(--sad-glow)');
+      } else {
+        root.style.setProperty('--accent', 'var(--neutral-primary)');
+        root.style.setProperty('--glow', 'var(--neutral-glow)');
+      }
+    }
+
+    emojiEl.textContent = info.emoji;
+    labelEl.textContent = info.label;
+    labelEl.className = `emotion-label ${info.className}`;
+    subEl.textContent = info.sub;
+
+    // Confidence
+    const conf = Math.round(confidence) || 0;
+    document.getElementById('confValue').textContent = conf + '%';
+    document.getElementById('confFill').style.width = conf + '%';
+    document.getElementById('confFill').style.background = 
+      emotion === 'happy' ? 'var(--happy-primary)' : 
+      emotion === 'sad' ? 'var(--sad-primary)' : 'var(--neutral-primary)';
+
+    // Breakdown bars
+    if (all_emotions) {
+      const emotionKeys = { happy: 'happy', sad: 'sad', angry: 'angry', fear: 'fear', surprise: 'surprise', neutral: 'neutral' };
+      for (const [key, barKey] of Object.entries(emotionKeys)) {
+        const val = Math.round(all_emotions[key] || 0);
+        document.getElementById(`bar-${barKey}`).style.width = val + '%';
+        document.getElementById(`val-${barKey}`).textContent = val + '%';
+      }
+    }
+
+    // History
+    emotionHistory.push(info.className);
+    if (emotionHistory.length > MAX_HISTORY) emotionHistory.shift();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const track = document.getElementById('historyTrack');
+    track.innerHTML = emotionHistory.map(e => `<div class="h-dot ${e}"></div>`).join('');
+  }
+
+  function resetUI() {
+    document.getElementById('cameraWrapper').className = 'camera-wrapper neutral';
+    document.getElementById('emotionCard').className = 'emotion-card neutral';
+    document.getElementById('emotionEmoji').textContent = '😐';
+    document.getElementById('emotionLabel').textContent = 'Neutral';
+    document.getElementById('emotionLabel').className = 'emotion-label neutral';
+    document.getElementById('emotionSub').textContent = 'Esperando análisis...';
+    document.getElementById('confValue').textContent = '0%';
+    document.getElementById('confFill').style.width = '0%';
+    emotionHistory = [];
+    renderHistory();
+    ['happy','sad','angry','fear','surprise','neutral'].forEach(k => {
+      document.getElementById(`bar-${k}`).style.width = '0%';
+      document.getElementById(`val-${k}`).textContent = '0%';
+    });
+    lastEmotion = null;
+    document.documentElement.style.removeProperty('--accent');
+    document.documentElement.style.removeProperty('--glow');
+    document.getElementById('faceCount').textContent = '— rostros';
+
+    const overlay = document.getElementById('overlayCanvas');
+    const overlayCtx = overlay.getContext('2d');
+    if (overlayCtx) {
+      overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+    }
+  }
+</script>
+</body>
+</html>

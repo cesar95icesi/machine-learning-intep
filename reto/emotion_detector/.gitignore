@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# DeepFace model weights (large binary files — copy manually, see models/README_models.txt)
+models/*.h5
+models/*.caffemodel
+models/*.prototxt
+
+# Terraform state & secrets
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+terraform/.terraform.lock.hcl

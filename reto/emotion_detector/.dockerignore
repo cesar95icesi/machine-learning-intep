@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.git/
+.gitignore
+*.md
+terraform/
+.dockerignore
+# models/ is intentionally NOT ignored — weight files are baked into the image

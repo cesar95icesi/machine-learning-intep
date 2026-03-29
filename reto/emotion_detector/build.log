@@ -1,0 +1,155 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.63kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/python:3.10-slim
+#2 DONE 0.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 214B 0.0s done
+#3 DONE 0.1s
+
+#4 [1/8] FROM docker.io/library/python:3.10-slim@sha256:4ba18b066cee17f2696cf9a2ba564d7d5eb05a91d6a949326780aa7c6912160d
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 925B 0.1s done
+#5 DONE 0.2s
+
+#6 [2/8] RUN apt-get update && apt-get install -y --no-install-recommends         libgl1         libglib2.0-0         libsm6         libxext6         libxrender1         curl     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/8] WORKDIR /app
+#7 CACHED
+
+#8 [4/8] COPY requirements.txt .
+#8 CACHED
+
+#9 [5/8] RUN pip install --no-cache-dir gunicorn==21.2.0 &&     pip install --no-cache-dir -r requirements.txt
+#9 5.070 Collecting gunicorn==21.2.0
+#9 5.424   Downloading gunicorn-21.2.0-py3-none-any.whl (80 kB)
+#9 5.458      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 80.2/80.2 kB 2.4 MB/s eta 0:00:00
+#9 5.582 Collecting packaging
+#9 5.602   Downloading packaging-26.0-py3-none-any.whl (74 kB)
+#9 5.614      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 74.4/74.4 kB 7.2 MB/s eta 0:00:00
+#9 5.771 Installing collected packages: packaging, gunicorn
+#9 6.224 Successfully installed gunicorn-21.2.0 packaging-26.0
+#9 6.226 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#9 6.455 
+#9 6.455 [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+#9 6.455 [notice] To update, run: pip install --upgrade pip
+#9 7.942 Collecting flask<4.0,>=3.0
+#9 8.053   Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+#9 8.095      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 103.4/103.4 kB 2.6 MB/s eta 0:00:00
+#9 8.180 Collecting flask-cors<5.0,>=4.0
+#9 8.220   Downloading Flask_Cors-4.0.2-py2.py3-none-any.whl (14 kB)
+#9 9.445 Collecting numpy<2.0,>=1.24
+#9 9.471   Downloading numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.2 MB)
+#9 11.24      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18.2/18.2 MB 10.9 MB/s eta 0:00:00
+#9 11.65 Collecting opencv-python<5.0,>=4.8
+#9 11.67   Downloading opencv_python-4.13.0.92-cp37-abi3-manylinux_2_28_x86_64.whl (72.9 MB)
+#9 19.52      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 72.9/72.9 MB 8.7 MB/s eta 0:00:00
+#9 19.81 Collecting deepface<1.0,>=0.0.90
+#9 19.84   Downloading deepface-0.0.99-py3-none-any.whl (169 kB)
+#9 19.87      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 169.5/169.5 kB 6.5 MB/s eta 0:00:00
+#9 20.53 Collecting tensorflow==2.10.1
+#9 20.56   Downloading tensorflow-2.10.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (578.1 MB)
+#9 ...
+
+#7 [3/8] WORKDIR /app
+#7 CACHED
+
+#9 [5/8] RUN pip install --no-cache-dir gunicorn==21.2.0 &&     pip install --no-cache-dir -r requirements.txt
+#9 88.91      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 578.1/578.1 MB 7.4 MB/s eta 0:00:00
+#9 91.44 Collecting keras<4.0,>=3.0
+#9 91.47   Downloading keras-3.12.1-py3-none-any.whl (1.5 MB)
+#9 91.67      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 7.5 MB/s eta 0:00:00
+#9 92.83 Collecting protobuf<3.20,>=3.9.2
+#9 92.87   Downloading protobuf-3.19.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.1 MB)
+#9 93.00      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 8.5 MB/s eta 0:00:00
+#9 93.06 Collecting six>=1.12.0
+#9 93.08   Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+#9 93.20 Collecting tensorboard<2.11,>=2.10
+#9 93.23   Downloading tensorboard-2.10.1-py3-none-any.whl (5.9 MB)
+#9 94.02      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.9/5.9 MB 7.5 MB/s eta 0:00:00
+#9 94.13 Collecting absl-py>=1.0.0
+#9 94.16   Downloading absl_py-2.4.0-py3-none-any.whl (135 kB)
+#9 94.18      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 135.8/135.8 kB 6.6 MB/s eta 0:00:00
+#9 94.25 Collecting termcolor>=1.1.0
+#9 94.28   Downloading termcolor-3.3.0-py3-none-any.whl (7.7 kB)
+#9 94.38 Collecting gast<=0.4.0,>=0.2.1
+#9 94.41   Downloading gast-0.4.0-py3-none-any.whl (9.8 kB)
+#9 94.41 Requirement already satisfied: setuptools in /usr/local/lib/python3.10/site-packages (from tensorflow==2.10.1->-r requirements.txt (line 6)) (79.0.1)
+#9 94.49 Collecting tensorflow-estimator<2.11,>=2.10.0
+#9 94.51   Downloading tensorflow_estimator-2.10.0-py2.py3-none-any.whl (438 kB)
+#9 94.59      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 438.7/438.7 kB 6.0 MB/s eta 0:00:00
+#9 94.77 Collecting tensorflow-io-gcs-filesystem>=0.23.1
+#9 94.80   Downloading tensorflow_io_gcs_filesystem-0.37.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (5.1 MB)
+#9 95.46      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.1/5.1 MB 7.8 MB/s eta 0:00:00
+#9 95.54 Collecting flatbuffers>=2.0
+#9 95.57   Downloading flatbuffers-25.12.19-py2.py3-none-any.whl (26 kB)
+#9 97.04 Collecting wrapt>=1.11.0
+#9 97.08   Downloading wrapt-2.1.2-cp310-cp310-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (113 kB)
+#9 97.10      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 113.6/113.6 kB 6.9 MB/s eta 0:00:00
+#9 97.17 Collecting opt-einsum>=2.3.2
+#9 97.20   Downloading opt_einsum-3.4.0-py3-none-any.whl (71 kB)
+#9 97.22      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 71.9/71.9 kB 5.1 MB/s eta 0:00:00
+#9 101.4 Collecting grpcio<2.0,>=1.24.3
+#9 101.4   Downloading grpcio-1.78.0-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.7 MB)
+#9 102.4      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.7/6.7 MB 7.0 MB/s eta 0:00:00
+#9 102.4 Requirement already satisfied: packaging in /usr/local/lib/python3.10/site-packages (from tensorflow==2.10.1->-r requirements.txt (line 6)) (26.0)
+#9 102.5 Collecting typing-extensions>=3.6.6
+#9 102.6   Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+#9 102.6      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.6/44.6 kB 5.0 MB/s eta 0:00:00
+#9 102.6 Collecting keras-preprocessing>=1.1.1
+#9 102.7   Downloading Keras_Preprocessing-1.1.2-py2.py3-none-any.whl (42 kB)
+#9 102.7      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 42.6/42.6 kB 8.4 MB/s eta 0:00:00
+#9 103.0 Collecting h5py>=2.9.0
+#9 103.0   Downloading h5py-3.16.0-cp310-cp310-manylinux_2_28_x86_64.whl (5.1 MB)
+#9 103.9      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.1/5.1 MB 6.0 MB/s eta 0:00:00
+#9 104.0 Collecting libclang>=13.0.0
+#9 104.0   Downloading libclang-18.1.1-py2.py3-none-manylinux2010_x86_64.whl (24.5 MB)
+#9 107.5      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 24.5/24.5 MB 7.2 MB/s eta 0:00:00
+#9 107.6 Collecting google-pasta>=0.1.1
+#9 107.7   Downloading google_pasta-0.2.0-py3-none-any.whl (57 kB)
+#9 107.7      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.5/57.5 kB 10.7 MB/s eta 0:00:00
+#9 107.7 ERROR: Cannot install -r requirements.txt (line 6) and keras<4.0 and >=3.0 because these package versions have conflicting dependencies.
+#9 107.7 
+#9 107.7 The conflict is caused by:
+#9 107.7     The user requested keras<4.0 and >=3.0
+#9 107.7     tensorflow 2.10.1 depends on keras<2.11 and >=2.10.0
+#9 107.7 
+#9 107.7 To fix this you could try to:
+#9 107.7 1. loosen the range of package versions you've specified
+#9 107.7 2. remove package versions to allow pip attempt to solve the dependency conflict
+#9 107.7 
+#9 107.7 ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts
+#9 108.0 
+#9 108.0 [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+#9 108.0 [notice] To update, run: pip install --upgrade pip
+#9 ERROR: process "/bin/sh -c pip install --no-cache-dir gunicorn==21.2.0 &&     pip install --no-cache-dir -r requirements.txt" did not complete successfully: exit code: 1
+------
+ > [5/8] RUN pip install --no-cache-dir gunicorn==21.2.0 &&     pip install --no-cache-dir -r requirements.txt:
+107.7     tensorflow 2.10.1 depends on keras<2.11 and >=2.10.0
+107.7 
+107.7 To fix this you could try to:
+107.7 1. loosen the range of package versions you've specified
+107.7 2. remove package versions to allow pip attempt to solve the dependency conflict
+107.7 
+107.7 ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/en/latest/topics/dependency-resolution/#dealing-with-dependency-conflicts
+108.0 
+108.0 [notice] A new release of pip is available: 23.0.1 -> 26.0.1
+108.0 [notice] To update, run: pip install --upgrade pip
+------
+Dockerfile:18
+--------------------
+  17 |     COPY requirements.txt .
+  18 | >>> RUN pip install --no-cache-dir gunicorn==21.2.0 && \
+  19 | >>>     pip install --no-cache-dir -r requirements.txt
+  20 |     
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c pip install --no-cache-dir gunicorn==21.2.0 &&     pip install --no-cache-dir -r requirements.txt" did not complete successfully: exit code: 1
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/2u0amaef29c8xaeyq6zpuv96m

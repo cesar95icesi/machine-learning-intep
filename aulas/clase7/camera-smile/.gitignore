@@ -1,0 +1,5 @@
+# Dataset FER2013 (carpetas de imagenes, muy pesado para git)
+archive/
+
+# Modelos entrenados (generados por train_model.py)
+*.joblib

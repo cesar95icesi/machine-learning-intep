@@ -1,0 +1,11 @@
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.*
+
+# Artifacts generados
+model.tar.gz
+model_artifact/
+lambda_package.zip
+lambda_package/

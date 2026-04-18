@@ -1,5 +1,10 @@
 # Instrucciones para Claude Code
 
+## Ramas protegidas
+
+- **NUNCA** hacer `git push` directo a `main` o `develop`. Siempre crear una rama y un Pull Request.
+- Si el remote advierte "Changes must be made through a pull request", **detenerse** y preguntar al usuario antes de continuar.
+
 ## Commits
 
 Todos los mensajes de commit deben seguir la especificación **Conventional Commits** (https://www.conventionalcommits.org/).
